@@ -1,0 +1,70 @@
+<html>
+	<head>
+	<style>
+		.wait, .wait * { cursor: wait; }
+	</style>
+	</head>
+	<body>
+		<div>
+			<input id="search_query"> Query</input>
+			<button id="search_button">Search</button>
+		</div>
+		<div id="graph"></div>
+
+		<script type="text/javascript" src="vendor/vis-network.min.js"></script>
+		<script type="text/javascript">
+
+			function get(url, callback) {
+				var xmlHttp = new XMLHttpRequest();
+				xmlHttp.onreadystatechange = function() { 
+				if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+					document.body.className = "";
+					callback(xmlHttp.responseText);
+
+				}
+				xmlHttp.open("GET", url, true);
+				xmlHttp.send();
+				document.body.className = 'wait';
+
+			}
+
+			function updateGraph(graphData) {
+				if (!graphData) {
+					return;
+				}
+				console.log(graphData);
+				var parsedData = vis.parseDOTNetwork(graphData);
+				network.setData({
+					nodes: parsedData.nodes,
+					edges: parsedData.edges
+				});
+			}
+
+			const search_field = document.getElementById("search_query");
+			const search_button = document.getElementById("search_button");
+			const container = document.getElementById("graph");
+			var options = {
+				nodes: {shape:"box", shadow: true},
+				interaction: {multiselect: true}
+			};
+			var network = new vis.Network(container, {}, options);
+			get("/api/search", updateGraph);
+
+			search_button.addEventListener("click", function(){
+				console.log("Searching...");
+				const params = new URLSearchParams({
+					search: search_field.value
+				});
+				get("/api/search?" + params.toString(), updateGraph);
+			}, false);
+			network.addEventListener("doubleClick", function(evt) {
+				for (let node of evt.nodes) {
+					const key = node.replace("_", "-");
+					console.log(key);
+				}
+			}, false);
+
+
+		</script>
+	</body>
+</html>
