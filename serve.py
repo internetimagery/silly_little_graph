@@ -1,4 +1,5 @@
 
+import os
 import re
 import http
 import http.server
@@ -26,6 +27,7 @@ class Issue:
     summary: str
     links: typing.List["Link"] = dataclasses.field(default_factory=list)
     tags: typing.List[str] = dataclasses.field(default_factory=list)
+    icon: str = dataclasses.field(default="")
 
 
 @dataclasses.dataclass()
@@ -37,10 +39,10 @@ class Link:
 
 def generateDotsGraph(issues: typing.Sequence[Issue]) -> str:
     nodes = {
-        issue.key: (issue.key.replace("-", "_"), issue.summary.replace('"', r'\"'))
+        issue.key: (issue.key.replace("-", "_"), issue.summary.replace('"', r'\"'), issue.icon or "img/ball.png")
         for issue in issues
     }
-    node_string = "\n".join(f'{node}[label="{key}" title="{summary}" key="{key}"]' for key, (node, summary) in nodes.items())
+    node_string = "\n".join(f'{node}[label="{key}" title="{summary}" image="{icon}"]' for key, (node, summary, icon) in nodes.items())
     link_string = "\n".join(
         f'{nodes[link.left.key][0]} -> {nodes[link.right.key][0]}[title="{link.name}"]'
         for issue in issues
@@ -60,6 +62,10 @@ def generateDotsGraph(issues: typing.Sequence[Issue]) -> str:
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
+
+    def __init__(self, *args, **kwargs):
+        directory = os.path.join(os.path.dirname(__file__), "www")
+        super(Handler, self).__init__(*args, directory=directory, **kwargs)
 
     def do_GET(self):
         request = re.match(r"/api/(\w+)", self.path)
@@ -92,7 +98,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             Issue(key="ITEM-789", summary="different project"),
             Issue(key="ITEM-432", summary="different project"),
             Issue(key="ITEM-432", summary="different project", tags=["blah"]),
-            Issue(key="ITEM-212", summary="different project"),
+            Issue(key="ITEM-212", summary="different project", icon="https://www.pngfind.com/pngs/m/616-6169356_a-complete-guide-for-beginners-atlassian-jira-jira.png"),
         ]
         issues[0].links.append(Link("Relates to...", issues[0], issues[2]))
         issues[0].links.append(Link("Relates to...", issues[4], issues[5]))

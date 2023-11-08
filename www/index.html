@@ -44,7 +44,7 @@
 			const search_button = document.getElementById("search_button");
 			const container = document.getElementById("graph");
 			var options = {
-				nodes: {shape:"box", shadow: true},
+				nodes: {shape:"circularImage", size: 15, shadow: {enabled: true}},
 				interaction: {multiselect: true}
 			};
 			var network = new vis.Network(container, {}, options);
