@@ -16,7 +16,7 @@ GRAPH_TEMPLATE = """digraph {{
 {nodes}
 /* Links */
 {links}
-/* Invisible Links (Used to pull nodes together without a visible link */
+/* Invisible Links (Used to pull nodes together without a visible link) */
 {invis}
 }}"""
 
@@ -106,7 +106,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             Issue(key="ITEM-789", summary="different project"),
             Issue(key="ITEM-111", summary="different project", type="task"),
             Issue(key="ITEM-432", summary="different project", type="task", tags=["blah"]),
-            Issue(key="ITEM-212", summary="different project", type="bug"),
+            Issue(key="ITEM-212", summary="different project", type="bug", tags=["stuff"]),
+            Issue(key="WORK-212", summary="doing work", type="story"),
+            Issue(key="WORK-454", summary="doing more work", type="story", tags=["blah", "stuff"]),
         ]
         issues[0].links.append(Link("Relates to...", issues[0], issues[2]))
         issues[0].links.append(Link("Relates to...", issues[4], issues[5]))
