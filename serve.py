@@ -20,6 +20,14 @@ GRAPH_TEMPLATE = """digraph {{
 {invis}
 }}"""
 
+ICONMAP = {
+    "epic": "img/epic.png",
+    "spike": "img/spike.png",
+    "story": "img/story.png",
+    "bug": "img/bug.png",
+    "task": "img/task.png",
+}
+
 
 @dataclasses.dataclass()
 class Issue:
@@ -27,7 +35,7 @@ class Issue:
     summary: str
     links: typing.List["Link"] = dataclasses.field(default_factory=list)
     tags: typing.List[str] = dataclasses.field(default_factory=list)
-    icon: str = dataclasses.field(default="")
+    type: str = dataclasses.field(default="")
 
 
 @dataclasses.dataclass()
@@ -39,7 +47,7 @@ class Link:
 
 def generateDotsGraph(issues: typing.Sequence[Issue]) -> str:
     nodes = {
-        issue.key: (issue.key.replace("-", "_"), issue.summary.replace('"', r'\"'), issue.icon or "img/ball.png")
+        issue.key: (issue.key.replace("-", "_"), issue.summary.replace('"', r'\"'), ICONMAP.get(issue.type, "img/ball.png"))
         for issue in issues
     }
     node_string = "\n".join(f'{node}[label="{key}" title="{summary}" image="{icon}"]' for key, (node, summary, icon) in nodes.items())
@@ -96,9 +104,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             Issue(key="PROJ-123", summary="Amazing issue", tags=["blah"]),
             Issue(key="PROJ-456", summary="something else"),
             Issue(key="ITEM-789", summary="different project"),
-            Issue(key="ITEM-432", summary="different project"),
-            Issue(key="ITEM-432", summary="different project", tags=["blah"]),
-            Issue(key="ITEM-212", summary="different project", icon="https://www.pngfind.com/pngs/m/616-6169356_a-complete-guide-for-beginners-atlassian-jira-jira.png"),
+            Issue(key="ITEM-111", summary="different project", type="task"),
+            Issue(key="ITEM-432", summary="different project", type="task", tags=["blah"]),
+            Issue(key="ITEM-212", summary="different project", type="bug"),
         ]
         issues[0].links.append(Link("Relates to...", issues[0], issues[2]))
         issues[0].links.append(Link("Relates to...", issues[4], issues[5]))
