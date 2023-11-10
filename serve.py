@@ -3,6 +3,7 @@ import os
 import re
 import http
 import http.server
+import urllib.parse
 import socketserver
 import webbrowser
 import urllib
@@ -100,6 +101,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(content)
 
     def processQuery(self, query):
+        if not query:
+            return generateDotsGraph(())
+
         issues = [
             Issue(key="PROJ-123", summary="Amazing issue", tags=["blah"]),
             Issue(key="PROJ-456", summary="something else"),
@@ -115,10 +119,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         return generateDotsGraph(issues)
 
 
-def main(port):
-    with socketserver.TCPServer(("", port), Handler) as httpd:
+def main(netloc, port, search):
+    with socketserver.TCPServer((netloc, port), Handler) as httpd:
         print("Running at port", port)
-        webbrowser.open(f"http://localhost:{port}")
+        query = urllib.parse.urlencode({"search": search})
+        webbrowser.open(f"http://{netloc}:{port}?{query}")
         httpd.serve_forever()
 
 
@@ -132,6 +137,8 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--port", type=int, default=8090)
+    parser.add_argument("-n", "--netloc", default="localhost")
+    parser.add_argument("-s", "--search", default="")
 
     args = parser.parse_args()
-    main(args.port)
+    main(args.netloc, args.port, args.search)

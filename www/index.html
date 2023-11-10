@@ -6,8 +6,10 @@
 	</head>
 	<body>
 		<div>
-			<input id="search_query"> Query</input>
-			<button id="search_button">Search</button>
+			<form>
+				<input id="search_query" name="search"/>
+				<button id="search_button" type="submit">Search</button>
+			</form>
 		</div>
 		<div id="graph"></div>
 
@@ -40,6 +42,16 @@
 				});
 			}
 
+			function startup() {
+				const query = new URL(window.location.href).searchParams.get("search");
+				if (query) {
+					search_field.value = query;
+					console.log("Searching...");
+					const params = new URLSearchParams({search: query});
+					get("/api/search?" + params.toString(), updateGraph);
+				};
+			}
+
 			const search_field = document.getElementById("search_query");
 			const search_button = document.getElementById("search_button");
 			const container = document.getElementById("graph");
@@ -48,15 +60,7 @@
 				interaction: {multiselect: true}
 			};
 			var network = new vis.Network(container, {}, options);
-			get("/api/search", updateGraph);
 
-			search_button.addEventListener("click", function(){
-				console.log("Searching...");
-				const params = new URLSearchParams({
-					search: search_field.value
-				});
-				get("/api/search?" + params.toString(), updateGraph);
-			}, false);
 			network.addEventListener("doubleClick", function(evt) {
 				for (let node of evt.nodes) {
 					const key = node.replace("_", "-");
@@ -64,6 +68,7 @@
 				}
 			}, false);
 
+			startup();
 
 		</script>
 	</body>
